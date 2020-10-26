@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css2?family=Turret+Road:wght@700;800&display=swap" rel="stylesheet">
+    <title>翻牌遊戲</title>
+    <style>
+        body {
+            background: #77706b;
+            background-image: url(./撲克牌/img/background.jpg);
+            background-repeat: no-repeat;
+            background-position: center 10px;
+            background-size: contain;
+            font-family: 'Turret Road', cursive;
+        }
+
+        /* 背景尺寸與樣式 */
+        #game {
+            width: 600px;
+            height: 700px;
+            /* border-radius: 15px; */
+            /* background-image: url(./撲克牌/img/background.jpg); */
+            text-align: center;
+            margin: auto;
+            position: relative;
+            transform: translateY(200px);
+        }
+
+        /* 卡片尺寸樣式 */
+        .card {
+            width: 80px;
+            height: 150px;
+            /* 設定子元素在 3D 空間內 */
+            transform-style: preserve-3d;
+            transform: translateY(30px);
+            position: relative;
+            transition: transform 0.5s;
+            float: left;
+            margin: 0 10px 0 10px;
+            /* border-radius: 20px; */
+            text-align: center;
+        }
+
+        .open {
+            transform: rotateY(180deg);
+        }
+
+        /* 用動畫讓他們翻 */
+        /* .pic {
+            animation: pic 1s linear forwards;
+        }
+
+        @keyframes pic {
+            from {
+                transform: rotateY(0deg);
+            }
+
+            50% {
+                transform: rotateY(180deg);
+
+            }
+
+            to {
+                transform: rotateY(0deg);
+            }
+        } */
+
+        /* 馬賽克*/
+        .front {
+            width: 95%;
+            height: 100%;
+            background-image: url(./撲克牌/img/after/0.jpg);
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            text-align: center;
+            /* transform: translateY(180px); */
+            /* border-radius: 20px; */
+
+        }
+
+        /* 滑鼠樣式 */
+        /* .card .front,.card .back{
+            cursor: pointer;
+        } */
+
+        /* 臉譜們 */
+        .back {
+            width: 95%;
+            height: 100%;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: relative;
+            /* transform: translateY(100px); */
+            transform: rotateY(180deg);
+            border-radius: 20px;
+            text-align: center;
+        }
+
+
+        /* 卡牌消失前會怎樣呢～？ */
+        .clear {
+
+            /* 穿透下一層的語法 */
+            /* pointer-events: none; */
+
+            /* 不翻直接消失 */
+            transform: rotateY(180deg);
+        }
+
+        /* 第一關 */
+        #showLevel {
+            height: 60px;
+            bottom: 695px;
+            left: 500px;
+            position: absolute;
+            font-size: 1.5rem;
+            color: rgb(61, 221, 136);
+        }
+
+        /* 時間 */
+        #useTime {
+            height: 70px;
+            bottom: 160px;
+            right: 25px;
+            position: absolute;
+            color: rgba(74, 192, 228, 0.507);
+            font-size: 8px;
+            font-weight: bolder;
+        }
+
+        #sec {
+            /* font-family: Arial; */
+            font-size: 3em;
+        }
+
+        #startBtn {
+            width: 70px;
+            height: 40px;
+            bottom: 205px;
+            left: 505px;
+            position: absolute;
+            border-radius: 15%;
+            font-family: "微軟正黑體";
+            color: white;
+            font-size: 1.3rem;
+            background-color: rgb(74, 145, 228);
+            border: 0px;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game">
+        <div id="showLevel"></div>
+        <input type="button" value="開始" id="startBtn">
+        <div id="useTime"></div>
+    </div>
+    <script src="jquery-3.5.1.min.js"></script>
+    <script>
+        $(function () {
+            // 設定
+            let setLevel = 1;
+
+            // 遊戲時間
+            // let sec = setSec;
+            // $("#sec").text(sec);
+
+            // 遊戲倒數計時
+            let gametimer = 0;
+
+            let startTime = new Date().getTime();
+            let endTime = new Date().getTime();
+
+            fun_defcrrd(setLevel);
+
+            // 開始遊戲
+            $("#startBtn").on("click", function () {
+                // 將按鈕停用
+                $(this).attr("disabled", true);
+                // 開始後一秒  按鈕消失
+                $("#startBtn").fadeOut(1000, function () { })
+
+                // 將預設卡片畫面移除
+                // $("#game .cardf").remove();
+
+                playGame(setLevel);
+            })
+
+            // 產生 16 張卡片
+            function fun_defcrrd(gameLevel) {
+                let cardNum = 6;
+                if (gameLevel == 2) {
+                    cardNum = 12;
+                } else if (gameLevel == 3) {
+                    cardNum = 16;
+                }
+
+                // 卡片一開始要不要顯示在螢幕上
+                // for (let i = 0; i < cardNum; i++) {
+                //     $("#game").append(`<div class="cardf">
+                //             <div class="front"></div>
+                //         </div>
+                //     `)
+                // }
+            }
+            // 設定關卡可偷窺時間
+            function playGame(gameLevel) {
+                let sec = 10;
+                let cardNum = 6;
+                let lookTime = 1000;
+                if (gameLevel == 2) {
+                    sec = 30;
+                    cardNum = 12;
+                    lookTime = 2000;
+                } else if (gameLevel == 3) {
+                    sec = 60;
+                    cardNum = 16;
+                    lookTime = 3000;
+                }
+                // 倒數
+                // $("#sec").text(sec);
+                $("#useTime").html('<span id="sec">' + sec + '</span>');
+                $("#showLevel").text("level " + gameLevel);
+
+                // 產生 16 張卡片
+                for (let i = 0; i < cardNum; i++) {
+                    $("#game").append(
+                        `<div class="card">
+                         <div class="front"></div>
+                         <div class="back"></div>
+                        </div>
+                    `)
+                }
+
+                for (let i = 0; i < $(".card").length; i++) {
+                    /*
+                        每個數字要有兩個才能消除
+                        以 16 張牌來說，就有 8 個數字
+                        以 i / 8 的餘數來判斷要加哪張牌
+                        因為牌號從 1 開始，所以要加 1
+                    */
+                    let add = i % ($(".card").length / 2) + 1;
+                    // $(".card").eq(i).find(".back").css("background-image", `url(./card/${add}S.jpg)`);
+                    $(".card").eq(i).find(".back").css("background-image", `url(./撲克牌/img/after/${add}A.jpg)`);
+
+                    $(".card").eq(i).attr("data-card", add);
+
+                    // 隨機取一張牌，將他放在目前迴圈跑到的牌後
+                    let target = Math.floor(Math.random() * $(".card").length);
+                    $(".card").eq(target).insertAfter($(".card").eq(i));
+                }
+
+                // 先翻牌給你看
+                for (let i = 0; i < cardNum; i++) {
+                    $(".card").eq(i).addClass("open");
+                }
+                setTimeout(() => {
+                    $(".card").removeClass("open");
+                    startTime = new Date().getTime();
+
+                    // 開始倒數
+                    gametimer = setInterval(() => {
+                        // 秒數減 1，修改文字
+                        sec--;
+                        // $("#sec").text(sec);
+                        $("#useTime").html('<span id="sec">' + sec + '</span>');
+
+                        // 如果到 0
+                        if (sec == 0) {
+                            clearInterval(gametimer);
+                            $(this).attr("disabled", false);
+                            setTimeout(() => {
+                                alert("時間到");
+                                // $("#game .card").remove();
+                                // fun_defcrrd();
+                                // reload=刷新頁面
+                                location.reload();
+                            }, 100)
+
+                        }
+                    }, 1000)
+                }, lookTime)
+
+
+                $(".card").on("click", function () {
+                    // 如果翻開的牌小於兩張，且這張還沒翻開
+                    if ($(".open").length < 2 && !$(this).hasClass("open")) {
+                        $(this).addClass("open");
+                    }
+
+                    // 如果翻開兩張了
+                    if ($(".open").length === 2) {
+                        // 0.5秒後翻回來
+                        setTimeout(() => {
+                            $(".open").removeClass("open");
+                        }, 500)
+
+                        // 如果兩張一樣，淡出
+                        if ($(".open").eq(0).attr("data-card") === $(".open").eq(1).attr("data-card")) {
+                            $(".open").fadeTo(1000, 0).addClass("clear");
+                        }
+
+                        // 如果全部都 clear
+                        if ($(".clear").length == $(".card").length) {
+                            endTime = new Date().getTime();
+                            setTimeout(() => {
+                                alert("恭喜過第" + gameLevel + "關，所花時間(" + parseInt(endTime - startTime) / 1000 + "秒)");
+                                // clearInterval(gametimer);
+                                // $("#game .card").remove();
+                                // fun_defcrrd();
+                                if (gameLevel < 3) {
+                                    clearInterval(gametimer);
+                                    $("#game .card").remove();
+                                    playGame(gameLevel + 1);
+                                } else {
+                                    location.reload();
+                                }
+
+                            }, 500);
+
+                        }
+                    }
+
+
+                })
+            }
+
+
+        })
+    </script>
+</body>
+
+</html>
